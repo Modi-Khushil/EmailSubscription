@@ -1,0 +1,76 @@
+package com.service;
+
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.springframework.stereotype.Service;
+
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+
+@Service
+public class MailSender {
+
+	DateFormat df = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss.SSS");
+
+	public boolean sendMail(String receiver, String subject, String message) {
+
+		Email from = new Email("modikhushil@gmail.com", "Khushil Modi");
+		Email to = new Email(receiver);
+
+		message = "<div dir='ltr'><div>" + message + "</div>-- <br>"
+				+ "<div dir='ltr' class='gmail_signature' data-smartmail='gmail_signature'>"
+				+ "<div dir='ltr'>"
+				+ "<div>"
+				+ "<div dir='ltr'>"
+				+ "<blockquote style='margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex'>"
+				+ "<font color='#0b5394'>"
+				+ "<span style='font-size:large'>Khushil Modi<br></span>"
+				+ "</font>"
+				+ "<a href='https://www.linkedin.com/in/khushil-modi-5051a3167/' target='_blank'>"
+				+ "<img src='file:///C:/Users/Sagar/Documents/workspace-spring-tool-suite-4-4.6.0.RELEASE/newsletter-subscription-master/src/main/resources/static/media/khushil.jpg' style='color:rgb(11,83,148);font-size:large' height='30px' width='35px'>"
+				+ "</a>"
+				+ "<font color='#0b5394'><br>"
+				+ "</font>"
+				+ "</blockquote>"
+				+ "<div>"
+				+ "<div dir='ltr'>"
+				+ "<blockquote style='margin:0px 0px 0px 40px;border:none;padding:0px'>"
+				+ "</blockquote>"
+				+ "</div>"
+				+ "</div>"
+				+ "</div>"
+				+ "</div>"
+				+ "</div>"
+				+ "</div>"
+				+ "</div>";
+		Content content = new Content("text/html", message);
+		Mail mail = new Mail(from, subject, to, content);
+
+		SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+		Request request = new Request();
+		try {
+			request.setMethod(Method.POST);
+			request.setEndpoint("mail/send");
+			request.setBody(mail.build());
+			Response response = sg.api(request);
+			System.out.println(df.format(new Date()) + "\t MailSender (" + response.getStatusCode()
+					+ "): Sent mail to '" + receiver + "' with subject of '" + subject + "'");
+			if (response.getStatusCode() >= 400) {
+				System.out.println("\t\t\t " + response.getBody());
+			} else {
+				return true;
+			}
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		return false;
+	}
+}
